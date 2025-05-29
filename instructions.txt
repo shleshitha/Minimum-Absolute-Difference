@@ -1,0 +1,2 @@
+g++ -std=c++17 -o test_runner tests/test.cpp
+./test_runner
