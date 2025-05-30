@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../solutions/solution.c" 
-int** minimumAbsDifference(int* arr, int arrSize, int* returnSize, int** returnColumnSizes);
+// int** minimumAbsDifference(int* arr, int arrSize, int* returnSize, int** returnColumnSizes);
 
 int compareResults(int** actual, int actualSize, int* actualColSizes,
                    int expected[][2], int expectedSize) {

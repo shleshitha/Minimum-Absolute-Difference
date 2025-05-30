@@ -1,0 +1,97 @@
+name: Run Code Tests
+
+on:
+  push:
+    paths:
+      - "solutions/**"
+  pull_request:
+    paths:
+      - "tests/**"
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Install Basic Tools
+        run: sudo apt update
+
+      - name: Detect Changed Solution Files
+        id: detect-changes
+        run: |
+          BEFORE_COMMIT="${{ github.event.before }}"
+          if [ -z "$BEFORE_COMMIT" ] || ! git cat-file -e "$BEFORE_COMMIT"^{commit}; then
+            BEFORE_COMMIT=$(git rev-parse HEAD~1)
+          fi
+
+          CHANGED_SOLUTIONS=$(git diff --name-only "$BEFORE_COMMIT" HEAD | grep '^solutions/' || true)
+          CHANGED_COUNT=$(echo "$CHANGED_SOLUTIONS" | wc -l)
+          echo "Changed solution files: $CHANGED_SOLUTIONS"
+
+          if [ "$CHANGED_COUNT" -eq 0 ]; then
+            echo "No solution files changed. Exiting..."
+            exit 1
+          elif [ "$CHANGED_COUNT" -gt 1 ]; then
+            echo "Multiple Solution codes Changed at a time and do not Run Tests."
+            exit 1
+          fi
+
+          SOL_FILE=$(echo "$CHANGED_SOLUTIONS" | head -n 1)
+          echo "SOLUTION_FILE=$SOL_FILE" >> $GITHUB_ENV
+
+          # Detect language
+          if echo "$SOL_FILE" | grep -qE '\.c$'; then
+            echo "language=C" >> $GITHUB_ENV
+          elif echo "$SOL_FILE" | grep -qE '\.cpp$'; then
+            echo "language=C++" >> $GITHUB_ENV
+          elif echo "$SOL_FILE" | grep -qE '\.py$'; then
+            echo "language=Python" >> $GITHUB_ENV
+          elif echo "$SOL_FILE" | grep -qE '\.java$'; then
+            echo "language=Java" >> $GITHUB_ENV
+          else
+            echo "Unsupported file type. Exiting..."
+            exit 1
+          fi
+
+      - name: Install C Dependencies
+        if: ${{ env.language == 'C' }}
+        run: sudo apt install -y gcc
+
+      - name: Install C++ Dependencies
+        if: ${{ env.language == 'C++' }}
+        run: sudo apt install -y g++
+
+      - name: Install Python Dependencies
+        if: ${{ env.language == 'Python' }}
+        run: sudo apt install -y python3
+
+      - name: Install Java Dependencies
+        if: ${{ env.language == 'Java' }}
+        run: sudo apt install -y openjdk-17-jdk
+
+      - name: Compile and Run C Tests
+        if: ${{ env.language == 'C' }}
+        run: |
+          gcc tests/test.c -o solution_c
+          ./solution_c
+
+      - name: Compile and Run C++ Tests
+        if: ${{ env.language == 'C++' }}
+        run: |
+          g++ -I. tests/test.cpp solutions/*.cpp -o solution_cpp
+          ./solution_cpp
+
+      - name: Run Python Tests
+        if: ${{ env.language == 'Python' }}
+        run: |
+          python3 -m tests.test
+
+      - name: Compile and Run Java Tests
+        if: ${{ env.language == 'Java' }}
+        run: |
+          javac -d . solutions/*.java tests/*.java
+          java tests.Test

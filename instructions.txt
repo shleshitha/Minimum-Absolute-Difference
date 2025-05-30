@@ -1,2 +1,15 @@
 g++ -std=c++17 -o test_runner tests/test.cpp
 ./test_runner
+
+
+javac solutions/Solution.java tests/Test.java
+java -cp . tests.Test
+
+
+python tests/test.py
+
+
+
+
+gcc tests/test.c -o test      
+./test_runner.exe
