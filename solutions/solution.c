@@ -33,6 +33,7 @@ int** minimumAbsDifference(int* arr, int arrSize, int* returnSize, int** returnC
     int** res = (int**) malloc(sizeof(int*) * count);
     *returnColumnSizes = (int*) malloc(sizeof(int) * count);
 
+    
     int idx = 0;
     for (int i = 1; i < arrSize; i++) {
         if (arr[i] - arr[i - 1] == minDiff) {
