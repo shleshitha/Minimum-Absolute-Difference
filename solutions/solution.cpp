@@ -8,7 +8,6 @@ using namespace std;
 class Solution {
 public:
     vector<vector<int>> minimumAbsDifference(vector<int>& arr) {
-        
         return {};
     }
 };
